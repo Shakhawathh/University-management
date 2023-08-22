@@ -1,6 +1,7 @@
-import express, { Application, Request, Response } from 'express'
+import express, { Application } from 'express'
 import cors from 'cors'
 import usersRoute from './app/modules/users/users.route'
+import globalErrorHandler from './app/middlewares/globalErrorHandler'
 // import usersService from './app/modules/users/users.service'
 
 const app: Application = express()
@@ -16,8 +17,11 @@ console.log(app.get('env'))
 app.use('/api/v1/users/', usersRoute)
 
 //Testing
-app.get('/', async (req: Request, res: Response) => {
-  res.send('Working connect')
-})
+// app.get('/', (req: Request, res: Response) => {
+//   throw new Error('tor error aise ')
+// })
+
+//global error handler
+app.use(globalErrorHandler)
 
 export default app
