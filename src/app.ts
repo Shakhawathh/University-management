@@ -16,9 +16,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/v1/users/', UserRoutes);
 
 // Testing
-// app.get('/', (req: Request, res: Response, next: NextFunction) => {
-//   next('error is err')
-// })
+// app.get('/', async(req: Request, res: Response, next: NextFunction) => {
+//   next('error is err');
+// });
 
 //global error handler
 app.use(globalErrorHandler);
