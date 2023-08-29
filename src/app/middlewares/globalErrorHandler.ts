@@ -1,14 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-unused-expressions */
-import { ErrorRequestHandler } from 'express';
+
+import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { IGenericErrorMessages } from '../../interfaces/error';
 import config from '../../config';
 import handleValidatorError from '../../errors/handleValidatorError';
 import ApiError from '../../errors/ApiError';
 import { errorLogger } from '../../shared/logger';
 import { ZodError } from 'zod';
-import handleZodError from './handleZodError';
+import handleZodError from '../../errors/handleZodError';
+import handleCastError from '../../errors/handleCastError';
 
-const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
+const globalErrorHandler: ErrorRequestHandler = (
+  error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   config.env === 'development'
     ? console.log('🐸🐸 globalErrorHandler ~', error)
     : errorLogger.error('🐸🐸 globalErrorHandler ~', error);
@@ -24,6 +33,11 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     errorMessages = simplifiedError.errorMessages;
   } else if (error instanceof ZodError) {
     const simplifiedError = handleZodError(error);
+    statusCode = simplifiedError.statusCode;
+    message = simplifiedError.message;
+    errorMessages = simplifiedError.errorMessages;
+  } else if (error?.name === 'CastError') {
+    const simplifiedError = handleCastError(error);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
     errorMessages = simplifiedError.errorMessages;
@@ -49,7 +63,6 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
         ]
       : [];
   }
-
   {
     res.status(statusCode).json({
       success: false,
@@ -58,7 +71,6 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
       stack: config.env !== 'production' ? error?.stack : undefined,
     });
   }
-  next();
 };
 
 export default globalErrorHandler;
